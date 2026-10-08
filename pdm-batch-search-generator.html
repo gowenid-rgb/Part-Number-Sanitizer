@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDM Batch Search String Generator</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --border-focus: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-glow: rgba(2, 132, 199, 0.35);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.35);
+      --badge-bg: #0f172a;
+      --badge-border: #475569;
+      --input-bg: #0b1120;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1040px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-titles h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-titles h1 span.tag {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .header-titles p {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      border-color: var(--border-color);
+      color: #cbd5e1;
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+      color: #ffffff;
+      border-color: #64748b;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 4px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 8px var(--primary-glow);
+    }
+
+    .btn-success {
+      background: var(--success) !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 6px var(--success-glow) !important;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 820px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+      padding: 12px 18px;
+      background: rgba(15, 23, 42, 0.5);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 280px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #f1f5f9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    textarea[readonly] {
+      background: #090d16;
+      cursor: text;
+    }
+
+    .options-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .toggles-group {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .format-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.86rem;
+      color: #cbd5e1;
+    }
+
+    .format-selector select {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.84rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .format-selector select:focus {
+      border-color: var(--border-focus);
+    }
+
+    .metrics-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .metric-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--badge-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+
+    .metric-badge .metric-num {
+      font-weight: 700;
+      color: #38bdf8;
+      font-size: 0.96rem;
+      font-family: ui-monospace, monospace;
+    }
+
+    .metric-badge .metric-name {
+      color: var(--text-muted);
+    }
+
+    .extracted-items-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .extracted-items-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .chip {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-family: ui-monospace, monospace;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover {
+      border-color: #38bdf8;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .chip-index {
+      color: #64748b;
+      font-size: 0.72rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      color: #64748b;
+      font-size: 0.85rem;
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-titles">
+        <h1>
+          PDM Search String Generator
+          <span class="tag">Part Number Sanitizer</span>
+        </h1>
+        <p>Extracts, cleans, and formats engineering part numbers (<code>\d{2}-\d{6}</code>) into PDM OR-query syntax.</p>
+      </div>
+      <div class="header-actions">
+        <button id="btnLoadSample" class="btn-secondary" title="Load sample BOM / messy engineering data">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Load Sample
+        </button>
+        <button id="btnClear" class="btn-secondary" title="Clear all inputs">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Clear
+        </button>
+      </div>
+    </header>
+
+    <!-- Controls & Metrics Bar -->
+    <div class="options-bar">
+      <div class="toggles-group">
+        <label class="toggle-label" title="Remove duplicate part numbers from the search output">
+          <input type="checkbox" id="chkDeduplicate" checked />
+          <span>Deduplicate items (default)</span>
+        </label>
+        <label class="toggle-label" title="Normalize spaced hyphens like '93 - 023749' or em-dashes">
+          <input type="checkbox" id="chkNormalizeHyphens" checked />
+          <span>Flexible Hyphen Match</span>
+        </label>
+      </div>
+
+      <div class="format-selector">
+        <label for="selDelimiter">Format:</label>
+        <select id="selDelimiter">
+          <option value="pdm" selected>PDM OR Operator ( | )</option>
+          <option value="newline">One per line (Newline)</option>
+          <option value="comma">Comma-separated ( , )</option>
+          <option value="semicolon">Semicolon-separated ( ; )</option>
+        </select>
+      </div>
+
+      <div class="metrics-bar">
+        <div class="metric-badge">
+          <span class="metric-num" id="metricTotal">0</span>
+          <span class="metric-name">Found</span>
+        </div>
+        <div class="metric-badge">
+          <span class="metric-num" id="metricUnique">0</span>
+          <span class="metric-name">Unique</span>
+        </div>
+        <div class="metric-badge">
+          <span class="metric-num" id="metricDupes">0</span>
+          <span class="metric-name">Dupes Removed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Textareas Grid -->
+    <div class="grid-container">
+      <!-- Input Panel -->
+      <div class="card">
+        <div class="card-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Source Data (Paste Input)
+          </h2>
+          <span style="font-size: 0.75rem; color: #94a3b8;">Auto-detects on paste & type</span>
+        </div>
+        <div class="card-body">
+          <textarea
+            id="txtInput"
+            placeholder="Paste raw data here... e.g.:
+- BOM tables & Excel columns
+- PDF file names: 93-023749 REV B.pdf
+- Drawing tags: 93-023748_P-01
+- Missing spaces: 93-02374993-023748
+- Email threads & tabular noise"
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="card">
+        <div class="card-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            PDM Search String (Output)
+          </h2>
+          <button id="btnCopy" class="btn-primary" title="Copy formatted string to clipboard (Alt+C or Ctrl+Enter)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="btnCopyText">Copy to Clipboard</span>
+          </button>
+        </div>
+        <div class="card-body">
+          <textarea
+            id="txtOutput"
+            readonly
+            placeholder="Formatted search string will appear here automatically..."
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Extracted Part Badges List -->
+    <div class="extracted-items-container">
+      <div class="extracted-items-header">
+        <span>Extracted Items Preview</span>
+        <span id="previewSummary">0 items</span>
+      </div>
+      <div class="chips-grid" id="chipsList">
+        <div class="empty-state">No valid part numbers detected yet. Paste text above to extract.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span>Copied search string to clipboard!</span>
+  </div>
+
+  <script>
+    // Elements
+    const txtInput = document.getElementById('txtInput');
+    const txtOutput = document.getElementById('txtOutput');
+    const chkDeduplicate = document.getElementById('chkDeduplicate');
+    const chkNormalizeHyphens = document.getElementById('chkNormalizeHyphens');
+    const selDelimiter = document.getElementById('selDelimiter');
+    const metricTotal = document.getElementById('metricTotal');
+    const metricUnique = document.getElementById('metricUnique');
+    const metricDupes = document.getElementById('metricDupes');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnCopyText = document.getElementById('btnCopyText');
+    const btnClear = document.getElementById('btnClear');
+    const btnLoadSample = document.getElementById('btnLoadSample');
+    const chipsList = document.getElementById('chipsList');
+    const previewSummary = document.getElementById('previewSummary');
+    const toast = document.getElementById('toast');
+
+    // Sample messy test text covering all spec scenarios
+    const SAMPLE_DATA = `BOM Extract - Task Chair Sub-Assembly:
+Item  Part Number            Rev    Description                 Material
+1     93-023749 REV B.pdf    B      Main Armrest Bracket Steel  Cold Rolled Steel
+2     93-023748 P-01         A      Base Caster Socket Dual     Nylon 66
+3     93-02374993-023748     -      (Concatenated run from table export error)
+4     93-112233_RELEASE.PDF  C      Gas Cylinder Stiffener      AISI 1020
+5     Part_93-023749.SLDPRT  B      CAD Part Model Duplicate
+6     Note: Please also verify 93-889900 and 93-023749 in PDM.
+7     93 - 023755 (spaced hyphen in email subject)`;
+
+    // Parser Logic
+    function parsePartNumbers(rawText) {
+      if (!rawText || !rawText.trim()) {
+        return { totalList: [], outputList: [], totalCount: 0, uniqueCount: 0, dupeCount: 0 };
+      }
+
+      let text = rawText;
+
+      // Optional normalization of spaced or en/em dashes (e.g. "93 - 023749" -> "93-023749")
+      if (chkNormalizeHyphens.checked) {
+        text = text.replace(/(\d{2})\s*[-–—]\s*(\d{6})/g, '$1-$2');
+      }
+
+      // Primary Regex: extracts standard 8-digit part formats XX-XXXXXX
+      // Also handles concatenated back-to-back codes without standard delimiters (e.g. 93-02374993-023748)
+      const regex = /(?:\d{2}-\d{6})/g;
+      const matches = text.match(regex) || [];
+
+      const totalCount = matches.length;
+
+      // Unique calculation preserving first occurrence order
+      const seen = new Set();
+      const uniqueList = [];
+      for (const item of matches) {
+        if (!seen.has(item)) {
+          seen.add(item);
+          uniqueList.push(item);
+        }
+      }
+
+      const uniqueCount = uniqueList.length;
+      const dupeCount = totalCount - uniqueCount;
+
+      const outputList = chkDeduplicate.checked ? uniqueList : matches;
+
+      return {
+        totalList: matches,
+        outputList,
+        totalCount,
+        uniqueCount,
+        dupeCount
+      };
+    }
+
+    function formatOutputString(list) {
+      if (!list || list.length === 0) return '';
+      const mode = selDelimiter.value;
+      switch (mode) {
+        case 'pdm':
+          // Standard PDM OR-operator: " | " (space-pipe-space)
+          return list.join(' | ');
+        case 'newline':
+          return list.join('\n');
+        case 'comma':
+          return list.join(', ');
+        case 'semicolon':
+          return list.join('; ');
+        default:
+          return list.join(' | ');
+      }
+    }
+
+    function updateUI() {
+      const result = parsePartNumbers(txtInput.value);
+
+      // Set output textarea
+      txtOutput.value = formatOutputString(result.outputList);
+
+      // Update metrics
+      metricTotal.textContent = result.totalCount;
+      metricUnique.textContent = result.uniqueCount;
+      metricDupes.textContent = result.dupeCount;
+
+      // Update Preview Chips
+      renderChips(result.outputList);
+    }
+
+    function renderChips(items) {
+      if (!items || items.length === 0) {
+        chipsList.innerHTML = '<div class="empty-state">No valid part numbers detected yet. Paste text above to extract.</div>';
+        previewSummary.textContent = '0 items';
+        return;
+      }
+
+      previewSummary.textContent = `${items.length} ${items.length === 1 ? 'item' : 'items'} ready`;
+      chipsList.innerHTML = items.map((part, idx) => `
+        <span class="chip" title="Click to copy ${part}" onclick="copySinglePart('${part}')">
+          <span class="chip-index">#${idx + 1}</span>
+          ${part}
+        </span>
+      `).join('');
+    }
+
+    window.copySinglePart = function(part) {
+      copyToClipboard(part, `Copied ${part} to clipboard!`);
+    };
+
+    function copyToClipboard(textToCopy, customToastMessage) {
+      if (!textToCopy) return;
+
+      const finishCopy = () => {
+        showToast(customToastMessage || 'Copied search string to clipboard!');
+        btnCopy.classList.add('btn-success');
+        btnCopyText.textContent = 'Copied!';
+        setTimeout(() => {
+          btnCopy.classList.remove('btn-success');
+          btnCopyText.textContent = 'Copy to Clipboard';
+        }, 1800);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).then(finishCopy).catch(() => {
+          fallbackCopy(textToCopy, finishCopy);
+        });
+      } else {
+        fallbackCopy(textToCopy, finishCopy);
+      }
+    }
+
+    function fallbackCopy(text, callback) {
+      const dummy = document.createElement('textarea');
+      dummy.value = text;
+      dummy.style.position = 'fixed';
+      dummy.style.opacity = '0';
+      document.body.appendChild(dummy);
+      dummy.focus();
+      dummy.select();
+      try {
+        document.execCommand('copy');
+        callback();
+      } catch (e) {
+        alert('Could not copy automatically. Please select the output box and press Ctrl+C.');
+      }
+      document.body.removeChild(dummy);
+    }
+
+    function showToast(msg) {
+      toast.querySelector('span').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // Event Listeners
+    txtInput.addEventListener('input', updateUI);
+    txtInput.addEventListener('paste', () => {
+      // Small timeout to let pasted value populate
+      setTimeout(updateUI, 10);
+    });
+
+    chkDeduplicate.addEventListener('change', updateUI);
+    chkNormalizeHyphens.addEventListener('change', updateUI);
+    selDelimiter.addEventListener('change', updateUI);
+
+    btnCopy.addEventListener('click', () => {
+      if (!txtOutput.value.trim()) {
+        showToast('Nothing to copy! Paste source text first.');
+        return;
+      }
+      copyToClipboard(txtOutput.value);
+    });
+
+    btnClear.addEventListener('click', () => {
+      txtInput.value = '';
+      updateUI();
+      txtInput.focus();
+    });
+
+    btnLoadSample.addEventListener('click', () => {
+      txtInput.value = SAMPLE_DATA;
+      updateUI();
+    });
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+Enter or Alt+C to copy
+      if ((e.ctrlKey && e.key === 'Enter') || (e.altKey && (e.key === 'c' || e.key === 'C'))) {
+        e.preventDefault();
+        btnCopy.click();
+      }
+    });
+
+    // Initial run
+    updateUI();
+  </script>
+</body>
+</html>
